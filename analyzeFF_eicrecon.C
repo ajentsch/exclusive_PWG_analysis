@@ -37,13 +37,6 @@ void analyzeFF_eicrecon(){
 	fileListStream.open(fileList);
 	if(!fileListStream) { cout << "NO_LIST_FILE " << fileList << endl; return;}
 
-	
-    //---------------------Roman Pots reconstruction constants------------------
-	
-	//N.B. this is all bullshit for right now while we solve the online reco problem
-	
-   
-
 	//--------------------------------------------------------------------------
 
 	//histograms -- only a few for now
