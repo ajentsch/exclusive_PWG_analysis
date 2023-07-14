@@ -54,7 +54,15 @@ void analyzeFF_eicrecon(){
 	TH1D* h_pt_RomanPots = new TH1D("pt_RomanPots", ";p_{t} [GeV/c]", 100, 0.0, 2.0);
 	TH1D* h_pz_RomanPots = new TH1D("pz_RomanPots", ";p_{z} [GeV/c]", 100, 0.0, 320.0);
 	TH2D* h_rp_occupancy_map = new TH2D("Roman_pots_occupancy_map", "hit y [mm];hit x [mm]", 100, -150, 150, 100, -70, -70);
-	
+
+	//OMD
+    TH1D* h_px_OMD = new TH1D("px_OMD", ";p_{x} [GeV/c]", 100, -10.0, 10.0);
+    TH1D* h_py_OMD = new TH1D("py_OMD", ";p_{y} [GeV/c]", 100, -10.0, 10.0);
+    TH1D* h_pt_OMD = new TH1D("pt_OMD", ";p_{t} [GeV/c]", 100, 0.0, 2.0);
+    TH1D* h_pz_OMD = new TH1D("pz_OMD", ";p_{z} [GeV/c]", 100, 0.0, 320.0);
+    TH2D* h_omd_occupancy_map = new TH2D("OMD_occupancy_map", "hit y [mm];hit x [mm]", 100, -150, 150, 100, -70, -70);	
+
+
 	//B0 tracker hits
 	TH2D* h_B0_occupancy_map_layer_0 = new TH2D("B0_occupancy_map_0", "B0_occupancy_map_0", 100, -400, 0, 100, -170, 170);
 	TH2D* h_B0_occupancy_map_layer_1 = new TH2D("B0_occupancy_map_1", "B0_occupancy_map_1", 100, -400, 0, 100, -170, 170);
@@ -103,18 +111,26 @@ void analyzeFF_eicrecon(){
     	TTreeReaderArray<float> mc_pz_array = {tree_reader, "MCParticles.momentum.z"};
     	TTreeReaderArray<double> mc_mass_array = {tree_reader, "MCParticles.mass"};
     	TTreeReaderArray<int> mc_pdg_array = {tree_reader, "MCParticles.PDG"};
-		
-		// Roman Pots
 	
-		//momentum vector
+		//Roman pots -- momentum vector
    	 	TTreeReaderArray<float> reco_RP_px = {tree_reader, "ForwardRomanPotRecParticles.momentum.x"};
     	TTreeReaderArray<float> reco_RP_py = {tree_reader, "ForwardRomanPotRecParticles.momentum.y"};
     	TTreeReaderArray<float> reco_RP_pz = {tree_reader, "ForwardRomanPotRecParticles.momentum.z"};
-		
+	
+		//Off-Momentum -- momentum vector
+		TTreeReaderArray<float> reco_OMD_px = {tree_reader, "ForwardOffMRecParticles.momentum.x"};
+        TTreeReaderArray<float> reco_OMD_py = {tree_reader, "ForwardOffMRecParticles.momentum.y"};
+        TTreeReaderArray<float> reco_OMD_pz = {tree_reader, "ForwardOffMRecParticles.momentum.z"};
+	
 		//hit locations (for debugging)
    	 	TTreeReaderArray<float> global_hit_RP_x = {tree_reader, "ForwardRomanPotRecParticles.referencePoint.x"};
     	TTreeReaderArray<float> global_hit_RP_y = {tree_reader, "ForwardRomanPotRecParticles.referencePoint.y"};
     	TTreeReaderArray<float> global_hit_RP_z = {tree_reader, "ForwardRomanPotRecParticles.referencePoint.z"};
+
+		//hit locations (for debugging)
+        TTreeReaderArray<float> global_hit_OMD_x = {tree_reader, "ForwardOffMRecParticles.referencePoint.x"};
+        TTreeReaderArray<float> global_hit_OMD_y = {tree_reader, "ForwardOffMRecParticles.referencePoint.y"};
+        TTreeReaderArray<float> global_hit_OMD_z = {tree_reader, "ForwardOffMRecParticles.referencePoint.z"};
 		
 		//b0 tracker hits
 		TTreeReaderArray<float> b0_hits_x = {tree_reader, "B0TrackerRecHits.position.x"};
@@ -176,8 +192,6 @@ void analyzeFF_eicrecon(){
     		
 				TVector3 prec_romanpots(reco_RP_px[iRPPart], reco_RP_py[iRPPart], reco_RP_pz[iRPPart]);	
     		
-				//prec_romanpots.RotateY(-0.025);
-			
 				h_px_RomanPots->Fill(prec_romanpots.Px());
 				h_py_RomanPots->Fill(prec_romanpots.Py());
 				h_pt_RomanPots->Fill(prec_romanpots.Perp());
@@ -185,7 +199,21 @@ void analyzeFF_eicrecon(){
 				
 				h_rp_occupancy_map->Fill(global_hit_RP_x[iRPPart], global_hit_RP_y[iRPPart]);
 			}
-				
+			
+			//OMD reco tracks
+            for(int iOMDPart = 0; iOMDPart < reco_OMD_px.GetSize(); iOMDPart++){
+
+                TVector3 prec_omd(reco_OMD_px[iOMDPart], reco_OMD_py[iOMDPart], reco_OMD_pz[iOMDPart]);
+
+                h_px_OMD->Fill(prec_omd.Px());
+                h_py_OMD->Fill(prec_omd.Py());
+                h_pt_OMD->Fill(prec_omd.Perp());
+                h_pz_OMD->Fill(prec_omd.Pz());
+
+                h_omd_occupancy_map->Fill(global_hit_OMD_x[iOMDPart], global_hit_OMD_y[iOMDPart]);
+            }
+		
+		
 			
 			double hit_x = -9999.;
 			double hit_y = -9999.;
@@ -272,6 +300,12 @@ void analyzeFF_eicrecon(){
 	h_pt_RomanPots->Write();
 	h_pz_RomanPots->Write();
 	h_rp_occupancy_map->Write();
+
+	h_px_OMD->Write();
+    h_py_OMD->Write();
+    h_pt_OMD->Write();
+    h_pz_OMD->Write();
+    h_omd_occupancy_map->Write(); 
 	
 	h_B0_occupancy_map_layer_0->Write();
 	h_B0_occupancy_map_layer_1->Write();
