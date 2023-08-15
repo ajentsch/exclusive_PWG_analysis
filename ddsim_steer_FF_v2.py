@@ -53,9 +53,9 @@ SIM.inputFiles = []
 ## Macro file to execute for runType 'run' or 'vis'
 SIM.macroFile = ""
 ## number of events to simulate, used in batch mode
-SIM.numberOfEvents = 100
+SIM.numberOfEvents = 5000
 ## Outputfile from the simulation,only lcio output is supported
-SIM.outputFile = "particleGun_RP_275_GeV_protons_1k_events.edm4hep.root"
+SIM.outputFile = "b0_ACTS_testing_ITS3_80_100_GeV_5k_events_8_11_2023_3.edm4hep.root"
 ## Physics list to use in simulation
 #SIM.physicsList = None
 ## Verbosity use integers from 1(most) to 7(least) verbose
@@ -199,7 +199,9 @@ SIM.field.stepper = "HelixSimpleRunge"
 ##     Setting a distribution will set isotrop = True
 ##
 SIM.gun.distribution = 'uniform'
-SIM.gun.energy = 275*GeV ## default energy value is MeV
+#SIM.gun.energy = 275*GeV ## default energy value is MeV
+SIM.gun.momentumMin = 80*GeV
+SIM.gun.momentumMax = 100*GeV
 
 ##  isotropic distribution for the particle gun
 ##
@@ -216,8 +218,8 @@ SIM.gun.particle = "proton"
 
 ##  position of the particle gun, 3 vector. unit mm
 ##SIM.gun.position = (0, 0, 0)
-SIM.gun.thetaMax = 0.000*radian
-SIM.gun.thetaMin = 0.005*radian
+SIM.gun.thetaMax = 0.006*radian
+SIM.gun.thetaMin = 0.013*radian
 
 
 ################################################################################
