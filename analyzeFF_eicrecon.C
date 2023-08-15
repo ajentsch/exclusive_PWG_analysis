@@ -13,14 +13,15 @@
 
 using namespace std;
 
+#include "detectorResolution.h"
 
 void analyzeFF_eicrecon(){
 
-	TString fileList = "./inputFileList_particleGun.list";
+	TString fileList = "./inputFileList_B0_ITS3_8_14_2023.list";
 	
-	TString outputName = "ePIC_fullReco_LOCAL_COORD_RP_Output_";	
+	TString outputName = "ePIC_fullReco_B0_ACTS_Output_ITS3_pixels";	
 
-	TString date = "7_10_2023_";
+	TString date = "8_14_2023_";
 	
 	TString run  = "run_0";
 
@@ -47,20 +48,23 @@ void analyzeFF_eicrecon(){
 	TH1D* h_py_MC = new TH1D("py_MC", ";p_{y} [GeV/c]", 100, -10.0, 10.0);
 	TH1D* h_pt_MC = new TH1D("pt_MC", ";p_{t} [GeV/c]", 100, 0.0, 2.0);
 	TH1D* h_pz_MC = new TH1D("pz_MC", ";p_{z} [GeV/c]", 100, 0.0, 320.0);
+	TH1D* h_theta_MC = new TH1D("theta_MC", ";#theta [mrad]", 100, 0.0, 25.0);
+	TH1D* h_phi_MC = new TH1D("phi_MC", ";#phi [rad]", 100, -3.2, 3.2);
 	
 	//Roman pots
 	TH1D* h_px_RomanPots = new TH1D("px_RomanPots", ";p_{x} [GeV/c]", 100, -10.0, 10.0);
 	TH1D* h_py_RomanPots = new TH1D("py_RomanPots", ";p_{y} [GeV/c]", 100, -10.0, 10.0);
 	TH1D* h_pt_RomanPots = new TH1D("pt_RomanPots", ";p_{t} [GeV/c]", 100, 0.0, 2.0);
 	TH1D* h_pz_RomanPots = new TH1D("pz_RomanPots", ";p_{z} [GeV/c]", 100, 0.0, 320.0);
-	TH2D* h_rp_occupancy_map = new TH2D("Roman_pots_occupancy_map", "hit y [mm];hit x [mm]", 100, -150, 150, 100, -70, -70);
+	TH2D* h_rp_occupancy_map = new TH2D("Roman_pots_occupancy_map", ";hit x [mm];hit y [mm]", 100, -1090, -700, 100, -70, -70);
+	//100, -150, 150, 100, -70, 70);
 
 	//OMD
     TH1D* h_px_OMD = new TH1D("px_OMD", ";p_{x} [GeV/c]", 100, -10.0, 10.0);
     TH1D* h_py_OMD = new TH1D("py_OMD", ";p_{y} [GeV/c]", 100, -10.0, 10.0);
     TH1D* h_pt_OMD = new TH1D("pt_OMD", ";p_{t} [GeV/c]", 100, 0.0, 2.0);
     TH1D* h_pz_OMD = new TH1D("pz_OMD", ";p_{z} [GeV/c]", 100, 0.0, 320.0);
-    TH2D* h_omd_occupancy_map = new TH2D("OMD_occupancy_map", "hit y [mm];hit x [mm]", 100, -150, 150, 100, -70, -70);	
+    TH2D* h_omd_occupancy_map = new TH2D("OMD_occupancy_map", ";hit x [mm];hit y [mm]", 100, -150, 150, 100, -70, -70);	
 
 
 	//B0 tracker hits
@@ -71,7 +75,7 @@ void analyzeFF_eicrecon(){
 	TH1D* h_B0_hit_energy_deposit = new TH1D("B0_tracker_hit_energy_deposit", ";Deposited Energy [keV]", 100, 0.0, 500.0);
 	
 	//B0 EMCAL clusters
-	TH2D* h_B0_emcal_occupancy_map = new TH2D("B0_emcal_occupancy_map", "B0_emcal_occupancy_map", 100, -400, 0, 100, -170, 170);
+	TH2D* h_B0_emcal_occupancy_map = new TH2D("B0_emcal_occupancy_map", ";hit x [mm];hit y [mm]", 100, -400, 0, 100, -170, 170);
 	TH1D* h_B0_emcal_cluster_energy = new TH1D("B0_emcal_cluster_energy", ";Cluster Energy [GeV]", 100, 0.0, 100.0);
 	
 	//Reconstructed tracks (for usage with B0 too!!)
@@ -84,6 +88,14 @@ void analyzeFF_eicrecon(){
 	TH2D* h_ZDC_emcal_occupancy_map = new TH2D("ZDC_emcal_occupancy_map", "ZDC_emcal_occupancy_map", 100, -1150, -1050, 100, -60, 60);
 	TH1D* h_ZDC_emcal_cluster_energy = new TH1D("ZDC_emcal_cluster_energy", ";Cluster Energy [GeV]", 100, 0.0, 100.0);
 	
+	//B0 momentum resolution
+
+	TH1D* h_b0_pt_resolution = new TH1D("b0_pt_resolution", ";#Delta p_{T} [GeV/c]", 100, -2.0, 2.0);
+    TH2D* h_b0_pt_resolution_percent = new TH2D("b0_deltaPt_over_pt_vs_pt", ";P_{T, MC} [GeV/c]; #Delta p_{T}/p_{T, MC} [percent/100]", 100, 0.0, 2.0, 100, -1.0, 1.0);	
+	TH2D* h_b0_p_resolution_percent = new TH2D("b0_deltaP_over_p_vs_p", ";Three-Momentum,  p_{MC} [GeV/c]; #Delta p/p_{MC} [percent/100]", 100, 0.0, 200.0, 100, -1.0, 1.0);	
+	TH1D* h_b0_extracted_pt_resolution;
+	TH1D* h_b0_extracted_p_resolution;
+
 	int fileCounter = 0;
 	int iEvent = 0;
 
@@ -111,6 +123,9 @@ void analyzeFF_eicrecon(){
     	TTreeReaderArray<float> mc_pz_array = {tree_reader, "MCParticles.momentum.z"};
     	TTreeReaderArray<double> mc_mass_array = {tree_reader, "MCParticles.mass"};
     	TTreeReaderArray<int> mc_pdg_array = {tree_reader, "MCParticles.PDG"};
+		TTreeReaderArray<int> mc_genStatus_array = {tree_reader, "MCParticles.generatorStatus"};
+		
+		
 	
 		//Roman pots -- momentum vector
    	 	TTreeReaderArray<float> reco_RP_px = {tree_reader, "ForwardRomanPotRecParticles.momentum.x"};
@@ -173,7 +188,10 @@ void analyzeFF_eicrecon(){
 	    	for(int imc=0;imc<mc_px_array.GetSize();imc++){
 	    		mctrk.SetXYZ(mc_px_array[imc], mc_py_array[imc], mc_pz_array[imc]);	
 				
-	    		if(mc_pdg_array[imc] == 2212){ //only checking for protons here -- change as desired
+				//cout << mc_pdg_array[imc] << endl;
+				
+				//He4 -- 1000020040
+	    		if(mc_pdg_array[imc] == 2212 && mc_genStatus_array[imc] == 1){ //only checking for protons here -- change as desired
 	    			
 					mctrk.RotateY(0.025);
 					
@@ -183,6 +201,8 @@ void analyzeFF_eicrecon(){
 					h_py_MC->Fill(mctrk.Py());
 					h_pt_MC->Fill(mctrk.Perp());
 					h_pz_MC->Fill(mctrk.Pz());
+					h_theta_MC->Fill(mctrk.Theta()*1000);
+					h_phi_MC->Fill(mctrk.Phi());
 				}
 				
 	    	}			
@@ -197,7 +217,7 @@ void analyzeFF_eicrecon(){
 				h_pt_RomanPots->Fill(prec_romanpots.Perp());
 				h_pz_RomanPots->Fill(prec_romanpots.Pz());
 				
-				h_rp_occupancy_map->Fill(global_hit_RP_x[iRPPart], global_hit_RP_y[iRPPart]);
+				if(global_hit_RP_z[iRPPart] < 27500){h_rp_occupancy_map->Fill(global_hit_RP_x[iRPPart], global_hit_RP_y[iRPPart]);}
 			}
 			
 			//OMD reco tracks
@@ -254,14 +274,24 @@ void analyzeFF_eicrecon(){
 		
 			
 			//reconstructed tracks with ACTS -- used for B0
+			cout << "Event has " << reco_track_x.GetSize() << " reco tracks from ACTS..." << endl;
 			for(int iRecoTrk = 0; iRecoTrk < reco_track_x.GetSize(); iRecoTrk++){
     		
 				TVector3 prec_reco_tracks(reco_track_x[iRecoTrk], reco_track_y[iRecoTrk], reco_track_z[iRecoTrk]);	
     					
+				prec_reco_tracks.RotateY(0.025);
+						
 				h_px_reco_track->Fill(prec_reco_tracks.Px());
 				h_py_reco_track->Fill(prec_reco_tracks.Py());
 				h_pt_reco_track->Fill(prec_reco_tracks.Perp());
 				h_pz_reco_track->Fill(prec_reco_tracks.Pz());
+
+				double delPt = prec_reco_tracks.Perp() - mctrk.Perp();
+				double delP = prec_reco_tracks.Mag() - mctrk.Mag();
+
+				h_b0_pt_resolution->Fill(delPt/mctrk.Perp());
+				h_b0_pt_resolution_percent->Fill(mctrk.Perp(), delPt/mctrk.Perp());
+				h_b0_p_resolution_percent->Fill(mctrk.Mag(), delP/mctrk.Mag());
 			}
 				
 			for(int iZdcEMCALcluster = 0; iZdcEMCALcluster < zdc_ecal_cluster_x.GetSize(); iZdcEMCALcluster++){
@@ -283,6 +313,14 @@ void analyzeFF_eicrecon(){
 		inputRootFile->Close();
 		
 	}// input file loop
+	
+	h_b0_extracted_pt_resolution = extractResolution("b0_extracted_pt_resolution", h_b0_pt_resolution_percent);
+	h_b0_extracted_pt_resolution->GetXaxis()->SetTitle("p_{T, MC} [GeV/c]");
+	h_b0_extracted_pt_resolution->GetYaxis()->SetTitle("#Delta p_{T}/p_{T, MC} [percent/100]");
+	
+	h_b0_extracted_p_resolution = extractResolution("b0_extracted_p_resolution", h_b0_p_resolution_percent);
+	h_b0_extracted_p_resolution->GetXaxis()->SetTitle("p_{MC} [GeV/c]");
+	h_b0_extracted_p_resolution->GetYaxis()->SetTitle("#Delta p/p_{MC} [percent/100]");
 		
 	cout << "Check integrals: " << endl;
 	cout << "pt_mc integral = " << h_pt_MC->Integral() << endl;
@@ -294,6 +332,8 @@ void analyzeFF_eicrecon(){
 	h_py_MC->Write();
 	h_pt_MC->Write();
 	h_pz_MC->Write();
+	h_theta_MC->Write();
+	h_phi_MC->Write();
 	
 	h_px_RomanPots->Write();
 	h_py_RomanPots->Write();
@@ -320,6 +360,12 @@ void analyzeFF_eicrecon(){
 	h_py_reco_track->Write();
 	h_pt_reco_track->Write();
 	h_pz_reco_track->Write();
+
+	h_b0_pt_resolution->Write();
+	h_b0_pt_resolution_percent->Write();
+	h_b0_extracted_pt_resolution->Write();
+	h_b0_p_resolution_percent->Write();
+	h_b0_extracted_p_resolution->Write();
 
 	h_ZDC_emcal_occupancy_map->Write();
 	h_ZDC_emcal_cluster_energy->Write();
