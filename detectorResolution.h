@@ -1,0 +1,40 @@
+TH1D* extractResolution(TString outputHistoName, TH2D* twoDHisto){
+
+	int num_bins  = twoDHisto->GetNbinsX();
+	double xBinWidth = twoDHisto->GetXaxis()->GetBinWidth(1); 
+	double xMin = twoDHisto->GetXaxis()->GetBinCenter(1) - xBinWidth*0.5;
+	double xMax = twoDHisto->GetXaxis()->GetBinCenter(num_bins) + xBinWidth*0.5;
+
+	TH1D * finalResoHisto = new TH1D(outputHistoName, outputHistoName, num_bins, xMin, xMax);
+
+	TH1D* tmp;
+	double rmsReso = 0.0;
+	double rmsErr = 0.0;
+	for(int bin = 0; bin < num_bins+1; bin++){
+	
+		rmsReso = 0.0;
+		tmp = (TH1D*)twoDHisto->ProjectionY("NEIN", bin, bin+1);
+		TF1 * func = new TF1("fitFunc", "gaus", -1.0, 1.0);
+		tmp->Fit(func);
+		
+		//rmsReso = tmp->GetRMS();
+		//rmsErr  = tmp->GetRMSError();
+
+		rmsReso = func->GetParameter(2);
+		rmsErr  = func->GetParError(2);
+		
+		if(rmsErr > rmsReso){
+			rmsReso = tmp->GetRMS();
+			rmsErr  = tmp->GetRMSError();
+		}
+		
+		finalResoHisto->SetBinContent(bin, rmsReso);
+		finalResoHisto->SetBinError(bin, rmsErr);
+		
+		delete func;
+	} 
+
+
+	return finalResoHisto;
+
+}
