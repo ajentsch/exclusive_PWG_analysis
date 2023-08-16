@@ -17,11 +17,11 @@ using namespace std;
 
 void analyzeFF_eicrecon(){
 
-	TString fileList = "./inputFileList_B0_ITS3_8_14_2023.list";
+	TString fileList = "./inputFileList_Kong_deuteron_v2.list";
 	
-	TString outputName = "ePIC_fullReco_B0_ACTS_Output_ITS3_pixels";	
+	TString outputName = "ePIC_fullReco_kong_checks_with_EPIC_changes_";	
 
-	TString date = "8_14_2023_";
+	TString date = "8_15_2023_";
 	
 	TString run  = "run_0";
 
@@ -56,7 +56,8 @@ void analyzeFF_eicrecon(){
 	TH1D* h_py_RomanPots = new TH1D("py_RomanPots", ";p_{y} [GeV/c]", 100, -10.0, 10.0);
 	TH1D* h_pt_RomanPots = new TH1D("pt_RomanPots", ";p_{t} [GeV/c]", 100, 0.0, 2.0);
 	TH1D* h_pz_RomanPots = new TH1D("pz_RomanPots", ";p_{z} [GeV/c]", 100, 0.0, 320.0);
-	TH2D* h_rp_occupancy_map = new TH2D("Roman_pots_occupancy_map", ";hit x [mm];hit y [mm]", 100, -1090, -700, 100, -70, -70);
+	//TH2D* h_rp_occupancy_map = new TH2D("Roman_pots_occupancy_map", ";hit x [mm];hit y [mm]", 100, -1090, -700, 100, -70, 70);
+	TH2D* h_rp_occupancy_map = new TH2D("Roman_pots_occupancy_map", ";hit x [mm];hit y [mm]", 100, -150, 150, 100, -80, 80);
 	//100, -150, 150, 100, -70, 70);
 
 	//OMD
@@ -64,7 +65,7 @@ void analyzeFF_eicrecon(){
     TH1D* h_py_OMD = new TH1D("py_OMD", ";p_{y} [GeV/c]", 100, -10.0, 10.0);
     TH1D* h_pt_OMD = new TH1D("pt_OMD", ";p_{t} [GeV/c]", 100, 0.0, 2.0);
     TH1D* h_pz_OMD = new TH1D("pz_OMD", ";p_{z} [GeV/c]", 100, 0.0, 320.0);
-    TH2D* h_omd_occupancy_map = new TH2D("OMD_occupancy_map", ";hit x [mm];hit y [mm]", 100, -150, 150, 100, -70, -70);	
+    TH2D* h_omd_occupancy_map = new TH2D("OMD_occupancy_map", ";hit x [mm];hit y [mm]", 100, -150, 150, 100, -70, 70);	
 
 
 	//B0 tracker hits
@@ -217,7 +218,7 @@ void analyzeFF_eicrecon(){
 				h_pt_RomanPots->Fill(prec_romanpots.Perp());
 				h_pz_RomanPots->Fill(prec_romanpots.Pz());
 				
-				if(global_hit_RP_z[iRPPart] < 27500){h_rp_occupancy_map->Fill(global_hit_RP_x[iRPPart], global_hit_RP_y[iRPPart]);}
+				h_rp_occupancy_map->Fill(global_hit_RP_x[iRPPart], global_hit_RP_y[iRPPart]);
 			}
 			
 			//OMD reco tracks
@@ -229,6 +230,8 @@ void analyzeFF_eicrecon(){
                 h_py_OMD->Fill(prec_omd.Py());
                 h_pt_OMD->Fill(prec_omd.Perp());
                 h_pz_OMD->Fill(prec_omd.Pz());
+
+				cout << "z hit OMD: " << global_hit_OMD_z[iOMDPart] << endl;
 
                 h_omd_occupancy_map->Fill(global_hit_OMD_x[iOMDPart], global_hit_OMD_y[iOMDPart]);
             }
