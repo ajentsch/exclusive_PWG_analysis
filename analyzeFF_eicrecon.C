@@ -1,12 +1,31 @@
 //-------------------------
 //
-// Simple analysis code to analyze EPIC simulation output for Roman Pots
+// Simple analysis code to analyze EPIC simulation output for Roman Pots, OMD, B0, and ZDC.
 //
-// NOTE: This is for tracks reconstructed using the Roman Pots "online"
+// NOTES: 
+//
+// 1) B0 works out of the box for charged particles - the tracks are reconstrucuted using ACTS with truth
+// seeding and stored as ReconstructedChargedParticles.
+//
+// 2) RP + OMD are using transport matrix reconstruction with a central-orbit matrix, and assuming decoupled
+// x and y motion (which is true for central orbits, we only steer in x).
+// This means that as XL increasingly moves away from 1, the matrix-induced smearing is increased. This 
+// will be fixed in the future, but is not analysis breaking.
+// 
+// For the OMD, it's a bit worse because the transport for off-momentum protons through the magnets is MUCH
+// messier. So if you are doing tagged-DIS, you may need to watch out for particle at large angles (theta > 1mrad),
+// and for XL != 0.5 (which is the assumed OMD "central orbit" for calculating the matrix).
+//
+// 3) For ZDC, no full reco is currently available, so only acceptance studies with poorly calibrated energy information
+// is available.
+//
+//-------------------------------------------------
+// Please email ajentsch@bnl.gov with any issues.
+//-------------------------------------------------
 //
 // Author: Alex Jentsch
 //
-// Date of last author update: 7/10/2023
+// Date of last author update: 8/21/2023
 //
 //------------------------
 
@@ -20,7 +39,7 @@ void analyzeFF_eicrecon(){
 	
 	TString outputName = "ePIC_fullReco_LOCAL_COORD_RP_Output_";	
 
-	TString date = "7_10_2023_";
+	TString date = "8_21_2023_";
 	
 	TString run  = "run_0";
 
@@ -53,14 +72,14 @@ void analyzeFF_eicrecon(){
 	TH1D* h_py_RomanPots = new TH1D("py_RomanPots", ";p_{y} [GeV/c]", 100, -10.0, 10.0);
 	TH1D* h_pt_RomanPots = new TH1D("pt_RomanPots", ";p_{t} [GeV/c]", 100, 0.0, 2.0);
 	TH1D* h_pz_RomanPots = new TH1D("pz_RomanPots", ";p_{z} [GeV/c]", 100, 0.0, 320.0);
-	TH2D* h_rp_occupancy_map = new TH2D("Roman_pots_occupancy_map", "hit y [mm];hit x [mm]", 100, -150, 150, 100, -70, -70);
+	TH2D* h_rp_occupancy_map = new TH2D("Roman_pots_occupancy_map", "hit y [mm];hit x [mm]", 100, -150, 150, 100, -70, 70);
 
 	//OMD
     TH1D* h_px_OMD = new TH1D("px_OMD", ";p_{x} [GeV/c]", 100, -10.0, 10.0);
     TH1D* h_py_OMD = new TH1D("py_OMD", ";p_{y} [GeV/c]", 100, -10.0, 10.0);
     TH1D* h_pt_OMD = new TH1D("pt_OMD", ";p_{t} [GeV/c]", 100, 0.0, 2.0);
     TH1D* h_pz_OMD = new TH1D("pz_OMD", ";p_{z} [GeV/c]", 100, 0.0, 320.0);
-    TH2D* h_omd_occupancy_map = new TH2D("OMD_occupancy_map", "hit y [mm];hit x [mm]", 100, -150, 150, 100, -70, -70);	
+    TH2D* h_omd_occupancy_map = new TH2D("OMD_occupancy_map", "hit y [mm];hit x [mm]", 100, -150, 150, 100, -70, 70);	
 
 
 	//B0 tracker hits
@@ -243,12 +262,13 @@ void analyzeFF_eicrecon(){
 				
 				h_B0_hit_energy_deposit->Fill(hit_deposited_energy);
 				
-				if(hit_deposited_energy < 10.0){ continue; } //threshold value -- 10 keV, arbitrary for now
+				if(hit_deposited_energy < 10.0){ continue; } //threshold value -- 10 keV, arbitrary, for now
 				
-    			if(hit_z > 5800 && hit_z < 6000){ h_B0_occupancy_map_layer_0->Fill(hit_x, hit_y); }
-				if(hit_z > 6000 && hit_z < 6200){ h_B0_occupancy_map_layer_1->Fill(hit_x, hit_y); }
-				if(hit_z > 6200 && hit_z < 6400){ h_B0_occupancy_map_layer_2->Fill(hit_x, hit_y); }
-				if(hit_z > 6400 && hit_z < 6600){ h_B0_occupancy_map_layer_3->Fill(hit_x, hit_y); }
+				//ACLGAD layout
+    			if(hit_z > 5700 && hit_z < 5990){ h_B0_occupancy_map_layer_0->Fill(hit_x, hit_y); }
+				if(hit_z > 6100 && hit_z < 6200){ h_B0_occupancy_map_layer_1->Fill(hit_x, hit_y); }
+				if(hit_z > 6400 && hit_z < 6500){ h_B0_occupancy_map_layer_2->Fill(hit_x, hit_y); }
+				if(hit_z > 6700 && hit_z < 6750){ h_B0_occupancy_map_layer_3->Fill(hit_x, hit_y); }
 				
 			}
 		
@@ -258,6 +278,8 @@ void analyzeFF_eicrecon(){
     		
 				TVector3 prec_reco_tracks(reco_track_x[iRecoTrk], reco_track_y[iRecoTrk], reco_track_z[iRecoTrk]);	
     					
+				prec_reco_tracks.RotateY(0.025); //remove crossing angle for B0!!!
+						
 				h_px_reco_track->Fill(prec_reco_tracks.Px());
 				h_py_reco_track->Fill(prec_reco_tracks.Py());
 				h_pt_reco_track->Fill(prec_reco_tracks.Perp());
