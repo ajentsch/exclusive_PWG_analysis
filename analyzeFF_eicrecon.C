@@ -17,11 +17,11 @@ using namespace std;
 
 void analyzeFF_eicrecon(){
 
-	TString fileList = "./inputFileList_Kong_deuteron_v2.list";
+	TString fileList = "./inputFileList_B0_ACLGAD_proper_geom_8_16_2023.list";
 	
-	TString outputName = "ePIC_fullReco_kong_checks_with_EPIC_changes_";	
+	TString outputName = "ePIC_fullReco_B0_ACTS_Output_ACLGAD_pixels_20k_events_";	
 
-	TString date = "8_15_2023_";
+	TString date = "8_21_2023_";
 	
 	TString run  = "run_0";
 
@@ -268,10 +268,17 @@ void analyzeFF_eicrecon(){
 				
 				if(hit_deposited_energy < 10.0){ continue; } //threshold value -- 10 keV, arbitrary for now
 				
-    			if(hit_z > 5800 && hit_z < 6000){ h_B0_occupancy_map_layer_0->Fill(hit_x, hit_y); }
-				if(hit_z > 6000 && hit_z < 6200){ h_B0_occupancy_map_layer_1->Fill(hit_x, hit_y); }
-				if(hit_z > 6200 && hit_z < 6400){ h_B0_occupancy_map_layer_2->Fill(hit_x, hit_y); }
-				if(hit_z > 6400 && hit_z < 6600){ h_B0_occupancy_map_layer_3->Fill(hit_x, hit_y); }
+				//ITS3 Layout
+    			//if(hit_z > 5800 && hit_z < 6000){ h_B0_occupancy_map_layer_0->Fill(hit_x, hit_y); }
+				//if(hit_z > 6000 && hit_z < 6200){ h_B0_occupancy_map_layer_1->Fill(hit_x, hit_y); }
+				//if(hit_z > 6200 && hit_z < 6400){ h_B0_occupancy_map_layer_2->Fill(hit_x, hit_y); }
+				//if(hit_z > 6400 && hit_z < 6600){ h_B0_occupancy_map_layer_3->Fill(hit_x, hit_y); }
+				
+				//ACLGAD layout
+    			if(hit_z > 5700 && hit_z < 5990){ h_B0_occupancy_map_layer_0->Fill(hit_x, hit_y); }
+				if(hit_z > 6100 && hit_z < 6200){ h_B0_occupancy_map_layer_1->Fill(hit_x, hit_y); }
+				if(hit_z > 6400 && hit_z < 6500){ h_B0_occupancy_map_layer_2->Fill(hit_x, hit_y); }
+				if(hit_z > 6700 && hit_z < 6750){ h_B0_occupancy_map_layer_3->Fill(hit_x, hit_y); }
 				
 			}
 		
